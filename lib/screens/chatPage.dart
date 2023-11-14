@@ -65,12 +65,22 @@ class _ChatPageState extends State<ChatPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(color: Colors.white),
-      child: SafeArea(
-        child: Column(
-          children: [
-            Padding(
+    return SafeArea(
+      child: Column(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.15), // Warna shadow
+                  spreadRadius: 5,
+                  blurRadius: 7,
+                  offset: Offset(0, 3), // Offset shadow
+                ),
+              ],
+            ),
+            child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
               child: Column(
                 children: [
@@ -78,14 +88,6 @@ class _ChatPageState extends State<ChatPage> {
                     child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          // Text(
-                          //   "Message",
-                          //   style: TextStyle(
-                          //       color: CustColors.tersierColor,
-                          //       fontFamily: "Poppins",
-                          //       fontWeight: FontWeight.w500,
-                          //       fontSize: 27),
-                          // ),
                           Image.asset(
                             "assets/PM.png",
                             height: 50,
@@ -178,34 +180,35 @@ class _ChatPageState extends State<ChatPage> {
                 ],
               ),
             ),
-            Expanded(
-              child: Container(
-                color: CustColors.secondaryColor,
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
-                child: SingleChildScrollView(
-                  physics: BouncingScrollPhysics(),
-                  child: ListView.builder(
-                    itemCount: foundUser.length,
-                    shrinkWrap: true,
-                    padding: EdgeInsets.only(bottom: 20, top: 10),
-                    physics: NeverScrollableScrollPhysics(),
-                    reverse: isReverse,
-                    itemBuilder: (context, index) {
-                      return Padding(
-                        padding: const EdgeInsets.only(top: 10, bottom: 10),
-                        child: ConversationList(
-                          name: foundUser[index].name,
-                          messageText: foundUser[index].messageText,
-                          imageUrl: foundUser[index].imageURL,
-                        ),
-                      );
-                    },
-                  ),
+          ),
+          // SizedBox(hei)
+          Expanded(
+            child: Container(
+              color: Colors.transparent,
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+              child: SingleChildScrollView(
+                physics: BouncingScrollPhysics(),
+                child: ListView.builder(
+                  itemCount: foundUser.length,
+                  shrinkWrap: true,
+                  padding: EdgeInsets.only(bottom: 20, top: 10),
+                  physics: NeverScrollableScrollPhysics(),
+                  reverse: isReverse,
+                  itemBuilder: (context, index) {
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 10, bottom: 10),
+                      child: ConversationList(
+                        name: foundUser[index].name,
+                        messageText: foundUser[index].messageText,
+                        imageUrl: foundUser[index].imageURL,
+                      ),
+                    );
+                  },
                 ),
               ),
-            )
-          ],
-        ),
+            ),
+          )
+        ],
       ),
     );
   }

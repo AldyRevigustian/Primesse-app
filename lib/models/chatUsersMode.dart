@@ -34,7 +34,7 @@ List<ChatUsers> chatUsers = [
         imageURL: "assets/Chelsea.jpg",
         messageText: "Generasi 11"),
     ChatUsers(
-        name: "Chika ",
+        name: "Chika",
         imageURL: "assets/Chika.jpg",
         messageText: "Generasi 7"),
     ChatUsers(

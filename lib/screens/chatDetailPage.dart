@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
@@ -40,7 +41,6 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
         20,
         messages.isNotEmpty ? lastMessage : null,
       );
-
       setState(() {
         messages.addAll(newMessages);
         if (newMessages.length != 0) {
@@ -57,7 +57,6 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
       20,
       messages.isNotEmpty ? lastMessage : null,
     );
-
     setState(() {
       messages.addAll(newMessages);
       if (newMessages.length != 0) {
@@ -76,8 +75,7 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
 
   @override
   void dispose() {
-    _scrollController.removeListener(
-        _scrollListener); // Remove the listener to prevent memory leaks
+    _scrollController.removeListener(_scrollListener);
     _scrollController.dispose();
     super.dispose();
   }
@@ -145,7 +143,7 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
             CircleAvatar(
               backgroundColor: Colors.white,
               backgroundImage: AssetImage(widget.image),
-              maxRadius: 25,
+              maxRadius: 20,
             ),
             SizedBox(
               width: 10,
@@ -236,28 +234,29 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                                                     BorderRadius.circular(25),
                                                 child: Stack(
                                                   children: [
-                                                    Image.network(
-                                                      messages[index]
+                                                    CachedNetworkImage(
+                                                      imageUrl: messages[index]
                                                           ["message"],
-                                                      loadingBuilder: (BuildContext
-                                                              context,
-                                                          Widget child,
-                                                          ImageChunkEvent?
-                                                              loadingProgress) {
-                                                        if (loadingProgress ==
-                                                            null) return child;
-                                                        return Center(
-                                                            child:
-                                                                SpinKitFadingCircle(
-                                                          color: CustColors
-                                                              .tersierColor
-                                                              .withOpacity(0.3),
-                                                          size: 30,
-                                                        ));
-                                                      },
+                                                      progressIndicatorBuilder:
+                                                          (context, url,
+                                                                  downloadProgress) =>
+                                                              SpinKitFadingCircle(
+                                                        color: CustColors
+                                                            .tersierColor
+                                                            .withOpacity(0.3),
+                                                        size: 30,
+                                                      ),
                                                       height: 300,
                                                       width: 230,
                                                       fit: BoxFit.cover,
+                                                      errorWidget: (context,
+                                                              url, error) =>
+                                                          Icon(Icons.error,
+                                                              color: CustColors
+                                                                  .tersierColor
+                                                                  .withOpacity(
+                                                                      0.3),
+                                                              size: 30),
                                                     ),
                                                     Positioned.fill(
                                                       child: Material(
