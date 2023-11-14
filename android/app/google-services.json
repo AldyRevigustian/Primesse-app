@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "903974262328",
+    "project_id": "primesse-aca86",
+    "storage_bucket": "primesse-aca86.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:903974262328:android:192dd9416821945f81b8cd",
+        "android_client_info": {
+          "package_name": "com.primesse.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDzNwDk2tMj_Q4MlMdeOrTz-kKeSyp-gd0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
