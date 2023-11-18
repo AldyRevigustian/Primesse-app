@@ -3,8 +3,8 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:primesse_app/models/chatUsersMode.dart';
-import 'package:primesse_app/screens/chatPage.dart';
 import 'package:primesse_app/utils/constant.dart';
+import 'package:primesse_app/widgets/conversationList.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -162,11 +162,29 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
       ),
-      body: SafeArea(
-          child: ChatPage(
-        isReverse: isReverse,
-        foundUser: foundUser,
-      )),
+      body: Column(
+        children: [
+          Expanded(
+            child: ListView.builder(
+              itemCount: foundUser.length,
+              padding: const EdgeInsets.only(
+                  bottom: 20, top: 10, left: 20, right: 20),
+              physics: const BouncingScrollPhysics(),
+              reverse: isReverse,
+              itemBuilder: (context, index) {
+                return Padding(
+                  padding: const EdgeInsets.only(top: 10, bottom: 10),
+                  child: ConversationList(
+                    name: foundUser[index].name,
+                    messageText: foundUser[index].messageText,
+                    imageUrl: foundUser[index].imageURL,
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

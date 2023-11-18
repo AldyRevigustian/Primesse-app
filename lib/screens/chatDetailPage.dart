@@ -66,11 +66,14 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
   }
 
   void _scrollListener() {
-    if (_scrollController.offset >=
-            _scrollController.position.maxScrollExtent &&
-        !_scrollController.position.outOfRange) {
+    if (_scrollController.offset == _scrollController.position.maxScrollExtent) {
       loadMore();
     }
+    // if (_scrollController.offset >=
+    //         _scrollController.position.maxScrollExtent &&
+    //     !_scrollController.position.outOfRange) {
+    //   loadMore();
+    // }
   }
 
   @override
@@ -234,30 +237,49 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                                                     BorderRadius.circular(25),
                                                 child: Stack(
                                                   children: [
-                                                    CachedNetworkImage(
-                                                      imageUrl: messages[index]
-                                                          ["message"],
-                                                      progressIndicatorBuilder:
-                                                          (context, url,
-                                                                  downloadProgress) =>
-                                                              SpinKitFadingCircle(
-                                                        color: CustColors
-                                                            .tersierColor
-                                                            .withOpacity(0.3),
-                                                        size: 30,
-                                                      ),
-                                                      height: 300,
-                                                      width: 230,
-                                                      fit: BoxFit.cover,
-                                                      errorWidget: (context,
-                                                              url, error) =>
-                                                          Icon(Icons.error,
-                                                              color: CustColors
-                                                                  .tersierColor
-                                                                  .withOpacity(
-                                                                      0.3),
-                                                              size: 30),
-                                                    ),
+                                                    Image.network(
+                                                        messages[index]
+                                                            ["message"],
+                                                        fit: BoxFit.cover,
+                                                        height: 300,
+                                                        width: 230,
+                                                        loadingBuilder:
+                                                            (BuildContext
+                                                                    context,
+                                                                Widget child,
+                                                                ImageChunkEvent?
+                                                                    loadingProgress) {
+                                                      if (loadingProgress ==
+                                                          null) return child;
+                                                      return Center(
+                                                        child:
+                                                            SpinKitFadingCircle(
+                                                          color: CustColors
+                                                              .tersierColor
+                                                              .withOpacity(0.3),
+                                                          size: 30,
+                                                        ),
+                                                      );
+                                                    }),
+                                                    // CachedNetworkImage(
+                                                    //   imageUrl: messages[index]
+                                                    //       ["message"],
+                                                    //   progressIndicatorBuilder:
+                                                    //       (context, url,
+                                                    //               downloadProgress) =>
+
+                                                    //   height: 300,
+                                                    //   width: 230,
+                                                    //   fit: BoxFit.cover,
+                                                    //   errorWidget: (context,
+                                                    //           url, error) =>
+                                                    //       Icon(Icons.error,
+                                                    //           color: CustColors
+                                                    //               .tersierColor
+                                                    //               .withOpacity(
+                                                    //                   0.3),
+                                                    //           size: 30),
+                                                    // ),
                                                     Positioned.fill(
                                                       child: Material(
                                                         color:
