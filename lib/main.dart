@@ -3,7 +3,6 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:primesse_app/api/firebase_api.dart';
 import 'package:primesse_app/firebase_options.dart';
 import 'package:primesse_app/screens/homePage.dart';
 import 'package:primesse_app/utils/constant.dart';
@@ -61,12 +60,11 @@ void main() async {
         NotificationDetails(
           android: AndroidNotificationDetails(channel.id, channel.name,
               channelDescription: channel.description,
-              icon: "@drawable/ic_stat_pm"
-              ),
+              icon: "@drawable/ic_stat_pm"),
         ));
   });
 
-  SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
       systemNavigationBarColor: Colors.white,
       systemNavigationBarIconBrightness: Brightness.dark));
   runApp(MyApp());
