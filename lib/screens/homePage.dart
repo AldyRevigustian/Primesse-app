@@ -1,8 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:intl/intl.dart';
 import 'package:primesse_app/models/chatUsersMode.dart';
+import 'package:primesse_app/screens/loginPage.dart';
 import 'package:primesse_app/utils/constant.dart';
 import 'package:primesse_app/widgets/conversationList.dart';
 
@@ -15,6 +18,7 @@ class _HomePageState extends State<HomePage> {
   List<ChatUsers> allUsers = chatUsers;
   List<ChatUsers> foundUser = [];
   bool isReverse = false;
+  List verified = [];
 
   void runFilter(String key) {
     List<ChatUsers> result = [];
@@ -48,11 +52,35 @@ class _HomePageState extends State<HomePage> {
     return querySnapshot.docs;
   }
 
+  Future<void> checkEmailExistence(BuildContext context) async {
+    final GoogleSignIn googleSignIn = GoogleSignIn();
+
+    if (FirebaseAuth.instance.currentUser?.email != null) {
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('Verified')
+          .where('email', isEqualTo: FirebaseAuth.instance.currentUser!.email)
+          .get();
+
+      await googleSignIn.signOut();
+      if (querySnapshot.docs.isEmpty) {
+        Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (context) => LoginPage()),
+            (Route<dynamic> route) => false);
+      }
+    } else {
+      Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => LoginPage()),
+          (Route<dynamic> route) => false);
+    }
+  }
+
   @override
   void initState() {
     fetchHistory();
     foundUser = allUsers;
-
+    Future.delayed(Duration(seconds: 1), () async {
+      checkEmailExistence(context);
+    });
     super.initState();
   }
 
@@ -166,6 +194,7 @@ class _HomePageState extends State<HomePage> {
         children: [
           Expanded(
             child: ListView.builder(
+              cacheExtent: 9999,
               itemCount: foundUser.length,
               padding: const EdgeInsets.only(
                   bottom: 20, top: 10, left: 20, right: 20),
