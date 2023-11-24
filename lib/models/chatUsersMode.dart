@@ -10,6 +10,10 @@ List<ChatUsers> chatUsers = [
         imageURL: "assets/Adel.jpg",
         messageText: "Generasi 8"),
     ChatUsers(
+        name: "Alya",
+        imageURL: "assets/Alya.jpg",
+        messageText: "Generasi 11"),
+    ChatUsers(
         name: "Amanda",
         imageURL: "assets/Amanda.jpg",
         messageText: "Generasi 10"),
