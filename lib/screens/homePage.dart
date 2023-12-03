@@ -1,13 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:intl/intl.dart';
 import 'package:primesse_app/models/chatUsersMode.dart';
-import 'package:primesse_app/screens/loginPage.dart';
+import 'package:primesse_app/screens/chatDetailPage.dart';
 import 'package:primesse_app/utils/constant.dart';
-import 'package:primesse_app/widgets/conversationList.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -15,28 +13,15 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  List<ChatUsers> allUsers = chatUsers;
-  List<ChatUsers> foundUser = [];
-  bool isReverse = false;
-  List verified = [];
-
-  void runFilter(String key) {
-    List<ChatUsers> result = [];
-    if (key.isEmpty) {
-      result = allUsers;
-    } else {
-      result = allUsers
-          .where((element) =>
-              element.name.toLowerCase().contains(key.toLowerCase()))
-          .toList();
-    }
-
-    setState(() {
-      foundUser = result;
-    });
-  }
-
   String history = "";
+  bool isFavOnly = false;
+  List<String> favList = [];
+  List<ChatUsers> foundUser = [];
+  List<ChatUsers> allUsers = chatUsers;
+  ScrollController scrollController = ScrollController(
+    keepScrollOffset: true,
+  );
+
   Future<List> fetchHistory() async {
     late QuerySnapshot querySnapshot;
 
@@ -52,35 +37,22 @@ class _HomePageState extends State<HomePage> {
     return querySnapshot.docs;
   }
 
-  Future<void> checkEmailExistence(BuildContext context) async {
-    final GoogleSignIn googleSignIn = GoogleSignIn();
-
-    if (FirebaseAuth.instance.currentUser?.email != null) {
-      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-          .collection('Verified')
-          .where('email', isEqualTo: FirebaseAuth.instance.currentUser!.email)
-          .get();
-
-      await googleSignIn.signOut();
-      if (querySnapshot.docs.isEmpty) {
-        Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (context) => LoginPage()),
-            (Route<dynamic> route) => false);
-      }
-    } else {
-      Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => LoginPage()),
-          (Route<dynamic> route) => false);
+  Future<void> loadList() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? favListString = prefs.getString('favList');
+    if (favListString != null && favListString.isNotEmpty) {
+      setState(() {
+        favList = favListString.split(',');
+      });
     }
+    changeFav();
   }
 
   @override
   void initState() {
     fetchHistory();
     foundUser = allUsers;
-    Future.delayed(Duration(seconds: 1), () async {
-      checkEmailExistence(context);
-    });
+    loadList();
     super.initState();
   }
 
@@ -91,6 +63,61 @@ class _HomePageState extends State<HomePage> {
     return formattedDate;
   }
 
+  void changeFav() {
+    foundUser.forEach((element) {
+      if (favList.contains(element.name)) {
+        element.isFav = true;
+        foundUser.remove(element);
+        foundUser.insert(0, element);
+      } else {
+        element.isFav = false;
+      }
+    });
+  }
+
+  Future<void> saveList() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('favList', favList.join(','));
+  }
+
+  Future<void> removeItem(String item) async {
+    favList.remove(item);
+    await saveList();
+  }
+
+  Future<void> addItem(String item) async {
+    favList.add(item);
+    await saveList();
+  }
+
+  void runFilter(String key) {
+    List<ChatUsers> result = [];
+    if (isFavOnly) {
+      if (key.isEmpty) {
+        result = allUsers.where((element) => element.isFav).toList();
+      } else {
+        result = allUsers
+            .where((element) =>
+                element.name.toLowerCase().contains(key.toLowerCase()))
+            .where((element) => element.isFav)
+            .toList();
+      }
+    } else {
+      if (key.isEmpty) {
+        result = allUsers;
+      } else {
+        result = allUsers
+            .where((element) =>
+                element.name.toLowerCase().contains(key.toLowerCase()))
+            .toList();
+      }
+    }
+
+    setState(() {
+      foundUser = result;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -98,7 +125,7 @@ class _HomePageState extends State<HomePage> {
       backgroundColor: CustColors.secondaryColor,
       appBar: AppBar(
         toolbarHeight: 185,
-        elevation: 1,
+        elevation: 0.5,
         backgroundColor: Colors.white,
         title: Padding(
           padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
@@ -168,17 +195,31 @@ class _HomePageState extends State<HomePage> {
                               CustColors.tersierColor.withOpacity(0.2),
                           onTap: () {
                             setState(() {
-                              isReverse = !isReverse;
+                              isFavOnly = !isFavOnly;
+
+                              if (isFavOnly) {
+                                foundUser = foundUser
+                                    .where((element) => element.isFav)
+                                    .toList();
+                              } else {
+                                foundUser = allUsers;
+                              }
                             });
                           },
                           child: Container(
                             decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(100)),
                             padding: EdgeInsets.all(13),
-                            child: Icon(
-                              FluentIcons.arrow_sort_20_regular,
-                              color: CustColors.tersierColor,
-                            ),
+                            child: isFavOnly
+                                ? Icon(
+                                    FluentIcons.star_20_filled,
+                                    color: Colors.yellow[700],
+                                  )
+                                : Icon(
+                                    FluentIcons.star_20_filled,
+                                    color: CustColors.tersierColor
+                                        .withOpacity(0.3),
+                                  ),
                           ),
                         ),
                       ),
@@ -194,21 +235,149 @@ class _HomePageState extends State<HomePage> {
         children: [
           Expanded(
             child: ListView.builder(
+              controller: scrollController,
               cacheExtent: 9999,
               itemCount: foundUser.length,
               padding: const EdgeInsets.only(
                   bottom: 20, top: 10, left: 20, right: 20),
               physics: const BouncingScrollPhysics(),
-              reverse: isReverse,
+              // addAutomaticKeepAlives: true,
               itemBuilder: (context, index) {
                 return Padding(
-                  padding: const EdgeInsets.only(top: 10, bottom: 10),
-                  child: ConversationList(
-                    name: foundUser[index].name,
-                    messageText: foundUser[index].messageText,
-                    imageUrl: foundUser[index].imageURL,
-                  ),
-                );
+                    padding: const EdgeInsets.only(top: 10, bottom: 10),
+                    child: Material(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(25),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(25),
+                        splashColor: CustColors.tersierColor.withOpacity(0.3),
+                        highlightColor:
+                            CustColors.tersierColor.withOpacity(0.2),
+                        onTap: () {
+                          Navigator.push(context,
+                              MaterialPageRoute(builder: (context) {
+                            return ChatDetailPage(
+                                name: foundUser[index].name,
+                                generasi: foundUser[index].messageText,
+                                image: foundUser[index].imageURL);
+                          }));
+                        },
+                        child: Container(
+                          child: Padding(
+                            padding: EdgeInsets.only(left: 20, right: 20),
+                            child: Container(
+                              padding: EdgeInsets.only(top: 15, bottom: 15),
+                              child: Row(
+                                children: <Widget>[
+                                  Expanded(
+                                    child: Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: <Widget>[
+                                        Padding(
+                                          padding: const EdgeInsets.all(3.0),
+                                          child: CircleAvatar(
+                                            backgroundColor: Colors.white,
+                                            backgroundImage: AssetImage(
+                                                foundUser[index].imageURL),
+                                            maxRadius: 27,
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          width: 10,
+                                        ),
+                                        Expanded(
+                                          child: Container(
+                                            color: Colors.transparent,
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.start,
+                                              children: <Widget>[
+                                                Text(
+                                                  foundUser[index].name,
+                                                  style: TextStyle(
+                                                      fontFamily: "Poppins",
+                                                      color: Colors.black,
+                                                      fontSize: 17,
+                                                      fontWeight:
+                                                          FontWeight.w500),
+                                                ),
+                                                SizedBox(
+                                                  height: 0,
+                                                ),
+                                                Text(
+                                                  foundUser[index].messageText,
+                                                  style: TextStyle(
+                                                      fontFamily: "Poppins",
+                                                      fontSize: 12,
+                                                      fontWeight:
+                                                          FontWeight.w500,
+                                                      color:
+                                                          Colors.grey.shade600),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                        Container(
+                                            child: IconButton(
+                                                onPressed: () {
+                                                  setState(() {
+                                                    foundUser[index].isFav =
+                                                        !foundUser[index].isFav;
+
+                                                    ChatUsers item =
+                                                        foundUser[index];
+
+                                                    if (item.isFav) {
+                                                      chatUsers.removeAt(index);
+                                                      chatUsers.insert(0, item);
+                                                      addItem(item.name);
+                                                    } else {
+                                                      chatUsers.removeAt(index);
+                                                      chatUsers.add(item);
+                                                      removeItem(item.name);
+                                                    }
+
+                                                    scrollController.animateTo(
+                                                        0.0,
+                                                        duration:
+                                                            const Duration(
+                                                                milliseconds:
+                                                                    300),
+                                                        curve: Curves.easeOut);
+                                                  });
+                                                },
+                                                icon: foundUser[index].isFav
+                                                    ? Icon(
+                                                        FluentIcons
+                                                            .star_20_filled,
+                                                        size: 25,
+                                                        color:
+                                                            Colors.yellow[700],
+                                                      )
+                                                    : Icon(
+                                                        FluentIcons
+                                                            .star_20_filled,
+                                                        size: 25,
+                                                        color: CustColors
+                                                            .tersierColor
+                                                            .withOpacity(0.3),
+                                                      )))
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ));
               },
             ),
           ),

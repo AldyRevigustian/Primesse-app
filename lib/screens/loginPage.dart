@@ -33,11 +33,13 @@ class _LoginPageState extends State<LoginPage> {
     }
 
     Future<void> checkEmailExistence(BuildContext context) async {
+      final GoogleSignIn googleSignIn = GoogleSignIn();
       try {
         QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-            .collection('Verified') // Ganti dengan nama koleksi Anda
+            .collection('Verified')
             .where('email', isEqualTo: FirebaseAuth.instance.currentUser!.email)
             .get();
+        await googleSignIn.signOut();
 
         if (querySnapshot.docs.isNotEmpty) {
           Navigator.of(context).pushAndRemoveUntil(
@@ -63,7 +65,6 @@ class _LoginPageState extends State<LoginPage> {
     }
 
     return Scaffold(
-      backgroundColor: CustColors.primaryColor,
       body: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -81,7 +82,7 @@ class _LoginPageState extends State<LoginPage> {
               padding: const EdgeInsets.all(20.0),
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  primary: Colors.white,
+                  primary: CustColors.primaryColor,
                   onPrimary: Colors.black,
                 ),
                 onPressed: () async {
@@ -90,23 +91,27 @@ class _LoginPageState extends State<LoginPage> {
                     checkEmailExistence(context);
                   }
                 },
-                child: const Padding(
-                  padding: EdgeInsets.fromLTRB(0, 15, 0, 15),
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(5, 10, 5, 10),
                   child: Row(
-                    mainAxisSize: MainAxisSize.max,
+                    mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Image(
-                        image: AssetImage("assets/google.png"),
-                        width: 24,
+                      Container(
+                        color: Colors.white,
+                        padding: EdgeInsets.all(5),
+                        child: Image(
+                          image: AssetImage("assets/google.png"),
+                          width: 24,
+                        ),
                       ),
                       Padding(
-                        padding: EdgeInsets.only(left: 24, right: 8),
+                        padding: EdgeInsets.only(left: 15, right: 8),
                         child: Text(
                           'Sign in with Google',
                           style: TextStyle(
                             fontSize: 16,
-                            color: Colors.black,
+                            color: Colors.white,
                             fontWeight: FontWeight.w600,
                           ),
                         ),

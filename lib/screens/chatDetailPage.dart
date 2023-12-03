@@ -121,7 +121,7 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 70,
-        elevation: 1,
+        elevation: 0.5,
         automaticallyImplyLeading: false,
         backgroundColor: Colors.white,
         title: Row(
