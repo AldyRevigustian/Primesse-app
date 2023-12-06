@@ -303,7 +303,7 @@ packages:
     source: sdk
     version: "0.0.0"
   flutter_cache_manager:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: flutter_cache_manager
       sha256: "8207f27539deb83732fdda03e259349046a39a4c767269285f449ade355d54ba"
@@ -384,6 +384,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.2.2"
+  google_nav_bar:
+    dependency: "direct main"
+    description:
+      name: google_nav_bar
+      sha256: "1c8e3882fa66ee7b74c24320668276ca23affbd58f0b14a24c1e5590f4d07ab0"
+      url: "https://pub.dev"
+    source: hosted
+    version: "5.0.6"
   google_sign_in:
     dependency: "direct main"
     description:
@@ -821,6 +829,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.11.0"
+  staggered_grid_view_flutter:
+    dependency: "direct main"
+    description:
+      name: staggered_grid_view_flutter
+      sha256: d46b27d1b57344945edf9eadbd5ee03a667a6599fd87e79f9a2d5e717e6accf3
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.4"
   stream_channel:
     dependency: transitive
     description:

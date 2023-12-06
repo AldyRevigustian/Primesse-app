@@ -1,9 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:primesse_app/screens/homePage.dart';
+import 'package:primesse_app/screens/navbarPage.dart';
 import 'package:primesse_app/utils/constant.dart';
 
 class LoginPage extends StatefulWidget {
@@ -43,7 +45,7 @@ class _LoginPageState extends State<LoginPage> {
 
         if (querySnapshot.docs.isNotEmpty) {
           Navigator.of(context).pushAndRemoveUntil(
-              MaterialPageRoute(builder: (context) => HomePage()),
+              MaterialPageRoute(builder: (context) => NavbarPage()),
               (Route<dynamic> route) => false);
         } else {
           final GoogleSignIn googleSignIn = GoogleSignIn();
@@ -82,7 +84,7 @@ class _LoginPageState extends State<LoginPage> {
               padding: const EdgeInsets.all(20.0),
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  primary: CustColors.primaryColor,
+                  primary: Color(0xFF2177E9),
                   onPrimary: Colors.black,
                 ),
                 onPressed: () async {
@@ -109,6 +111,42 @@ class _LoginPageState extends State<LoginPage> {
                         padding: EdgeInsets.only(left: 15, right: 8),
                         child: Text(
                           'Sign in with Google',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20,),
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  primary: CustColors.primaryColor,
+                  onPrimary: Colors.black,
+                ),
+                onPressed: () async {
+                  await signInWithGoogle();
+                  if (mounted) {
+                    checkEmailExistence(context);
+                  }
+                },
+                child: const Padding(
+                  padding: EdgeInsets.fromLTRB(43, 10, 43, 10),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(FluentIcons.cart_24_filled, size: 30, color: Colors.white,),
+                      Padding(
+                        padding: EdgeInsets.only(left: 10, right: 10, top: 5),
+                        child: Text(
+                          'Subscribe',
                           style: TextStyle(
                             fontSize: 16,
                             color: Colors.white,

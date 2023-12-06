@@ -5,7 +5,7 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:primesse_app/screens/homePage.dart';
 import 'package:primesse_app/screens/loginPage.dart';
-import 'package:primesse_app/utils/constant.dart';
+import 'package:primesse_app/screens/navbarPage.dart';
 
 class LoadinPage extends StatefulWidget {
   const LoadinPage({super.key});
@@ -27,23 +27,25 @@ class _LoadinPageState extends State<LoadinPage> {
       await googleSignIn.signOut();
       if (querySnapshot.docs.isEmpty) {
         Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (context) => LoginPage()),
+            MaterialPageRoute(builder: (context) => const LoginPage()),
             (Route<dynamic> route) => false);
       } else {
         Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (context) => HomePage()),
+            MaterialPageRoute(builder: (context) => const NavbarPage()),
             (Route<dynamic> route) => false);
       }
     } else {
       Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => LoginPage()),
+          MaterialPageRoute(builder: (context) => const LoginPage()),
           (Route<dynamic> route) => false);
     }
   }
 
   @override
   void initState() {
-    checkEmailExistence(context);
+    Future.delayed(Duration(milliseconds: 500), () {
+      checkEmailExistence(context);
+    });
     super.initState();
   }
 

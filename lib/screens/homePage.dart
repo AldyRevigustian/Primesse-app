@@ -125,7 +125,12 @@ class _HomePageState extends State<HomePage> {
       backgroundColor: CustColors.secondaryColor,
       appBar: AppBar(
         toolbarHeight: 185,
-        elevation: 0.5,
+        elevation: 1,
+        shadowColor: Colors.black.withOpacity(0.5),
+        shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(30),
+                bottomRight: Radius.circular(30)), side: BorderSide.none),
         backgroundColor: Colors.white,
         title: Padding(
           padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),

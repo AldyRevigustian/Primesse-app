@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:primesse_app/firebase_options.dart';
+import 'package:primesse_app/screens/galleryPage.dart';
 import 'package:primesse_app/screens/loading.dart';
 import 'package:primesse_app/utils/constant.dart';
 

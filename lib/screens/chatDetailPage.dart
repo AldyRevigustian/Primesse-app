@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:intl/intl.dart';
 import 'package:primesse_app/utils/constant.dart';
@@ -24,6 +25,7 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
   bool isLoading = false;
   late ScrollController _scrollController;
   late DocumentSnapshot lastMessage;
+
   @override
   void initState() {
     super.initState();
@@ -76,6 +78,13 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
     //   loadMore();
     // }
   }
+
+  final customCacheManager = CacheManager(Config(
+    'customCacheKey',
+    stalePeriod: Duration(days: 15),
+    maxNrOfCacheObjects: 999999,
+    repo: JsonCacheInfoRepository(databaseName: 'customCache'),
+  ));
 
   @override
   void dispose() {
@@ -239,31 +248,9 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                                                     BorderRadius.circular(25),
                                                 child: Stack(
                                                   children: [
-                                                    // Image.network(
-                                                    //     messages[index]
-                                                    //         ["message"],
-                                                    //     fit: BoxFit.cover,
-                                                    //     height: 300,
-                                                    //     width: 230,
-                                                    //     loadingBuilder:
-                                                    //         (BuildContext
-                                                    //                 context,
-                                                    //             Widget child,
-                                                    //             ImageChunkEvent?
-                                                    //                 loadingProgress) {
-                                                    //   if (loadingProgress ==
-                                                    //       null) return child;
-                                                    //   return Center(
-                                                    //     child:
-                                                    //         SpinKitFadingCircle(
-                                                    //       color: CustColors
-                                                    //           .tersierColor
-                                                    //           .withOpacity(0.3),
-                                                    //       size: 30,
-                                                    //     ),
-                                                    //   );
-                                                    // }),
                                                     CachedNetworkImage(
+                                                      cacheManager:
+                                                          customCacheManager,
                                                       imageUrl: messages[index]
                                                           ["message"],
                                                       progressIndicatorBuilder:
@@ -278,6 +265,7 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                                                           size: 30,
                                                         ),
                                                       ),
+                                                      memCacheWidth: 230,
                                                       height: 300,
                                                       width: 230,
                                                       fit: BoxFit.cover,
