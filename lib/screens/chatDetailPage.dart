@@ -251,35 +251,44 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                                                 child: Stack(
                                                   children: [
                                                     CachedNetworkImage(
-                                                      cacheManager:
-                                                          customCacheManager,
-                                                      imageUrl: messages[index]
-                                                          ["message"],
-                                                      progressIndicatorBuilder:
-                                                          (context, url,
-                                                                  downloadProgress) =>
-                                                              Center(
-                                                        child:
-                                                            SpinKitFadingCircle(
-                                                          color: CustColors
-                                                              .tersierColor
-                                                              .withOpacity(0.3),
-                                                          size: 30,
-                                                        ),
-                                                      ),
-                                                      memCacheWidth: 300,
-                                                      height: 300,
-                                                      width: 230,
-                                                      fit: BoxFit.cover,
-                                                      errorWidget: (context,
-                                                              url, error) =>
-                                                          Icon(Icons.error,
-                                                              color: CustColors
-                                                                  .tersierColor
-                                                                  .withOpacity(
-                                                                      0.3),
-                                                              size: 30),
-                                                    ),
+                                                        cacheManager:
+                                                            customCacheManager,
+                                                        imageUrl:
+                                                            messages[index]
+                                                                ["message"],
+                                                        progressIndicatorBuilder:
+                                                            (context, url,
+                                                                    downloadProgress) =>
+                                                                Center(
+                                                                  child:
+                                                                      SpinKitFadingCircle(
+                                                                    color: CustColors
+                                                                        .tersierColor
+                                                                        .withOpacity(
+                                                                            0.3),
+                                                                    size: 30,
+                                                                  ),
+                                                                ),
+                                                        memCacheWidth: 300,
+                                                        height: 300,
+                                                        width: 230,
+                                                        fit: BoxFit.cover,
+                                                        errorWidget: (context,
+                                                            url, error) {
+                                                          return IconButton(
+                                                            onPressed: () {
+                                                              customCacheManager
+                                                                  .removeFile(url);
+                                                            },
+                                                            icon: Icon(
+                                                                Icons.error,
+                                                                color: CustColors
+                                                                    .tersierColor
+                                                                    .withOpacity(
+                                                                        0.3),
+                                                                size: 30),
+                                                          );
+                                                        }),
                                                     Positioned.fill(
                                                       child: Material(
                                                         color:
@@ -294,8 +303,10 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                                                               return ImagePreview(
                                                                   name: widget
                                                                       .name,
-                                                                  generasi: member!.messageText,
-                                                                  image: member!.imageURL,
+                                                                  generasi: member!
+                                                                      .messageText,
+                                                                  image: member!
+                                                                      .imageURL,
                                                                   url: messages[
                                                                           index]
                                                                       [

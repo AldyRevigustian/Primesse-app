@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -13,7 +12,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  String history = "";
   bool isFavOnly = false;
   List<String> favList = [];
   List<ChatUsers> foundUser = [];
@@ -22,20 +20,6 @@ class _HomePageState extends State<HomePage> {
     keepScrollOffset: true,
   );
 
-  Future<List> fetchHistory() async {
-    late QuerySnapshot querySnapshot;
-
-    querySnapshot = await FirebaseFirestore.instance
-        .collection("History")
-        .orderBy('last_update', descending: true)
-        .limit(1)
-        .get();
-
-    setState(() {
-      history = querySnapshot.docs[0]['last_update'];
-    });
-    return querySnapshot.docs;
-  }
 
   Future<void> loadList() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -50,7 +34,6 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void initState() {
-    fetchHistory();
     foundUser = allUsers;
     loadList();
     super.initState();
@@ -142,15 +125,8 @@ class _HomePageState extends State<HomePage> {
                     children: [
                       Image.asset(
                         "assets/PM.png",
-                        height: 50,
+                        height: 60,
                       ),
-                      SizedBox(
-                        height: 10,
-                      ),
-                      Text(
-                        history == "" ? "Loading" : formatDate(history),
-                        style: TextStyle(fontSize: 10, color: Colors.black),
-                      )
                     ]),
               ),
               SizedBox(
