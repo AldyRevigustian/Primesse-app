@@ -12,9 +12,6 @@ import 'package:primesse_app/widgets/imagePreview.dart';
 
 class ChatDetailPage extends StatefulWidget {
   final String name;
-  // final String generasi;
-  // final String image;
-
   ChatDetailPage({required this.name});
   @override
   _ChatDetailPageState createState() => _ChatDetailPageState();
