@@ -117,12 +117,16 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
 
   String formatDate(date) {
     DateTime dateTime = DateTime.parse(date);
+    dateTime = dateTime.add(const Duration(hours: 7));
+
     String formattedDate = DateFormat('dd MMMM yyyy HH:mm').format(dateTime);
     return formattedDate;
   }
 
   String formatName(date) {
     DateTime dateTime = DateTime.parse(date);
+
+    dateTime = dateTime.add(const Duration(hours: 7));
     String formattedDate = DateFormat('dd-MM-yyyy-HHmmss').format(dateTime);
     return "" + formattedDate + ".mp3";
   }
@@ -278,7 +282,8 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                                                           return IconButton(
                                                             onPressed: () {
                                                               customCacheManager
-                                                                  .removeFile(url);
+                                                                  .removeFile(
+                                                                      url);
                                                             },
                                                             icon: Icon(
                                                                 Icons.error,
