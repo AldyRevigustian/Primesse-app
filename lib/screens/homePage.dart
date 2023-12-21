@@ -262,9 +262,7 @@ class _HomePageState extends State<HomePage> {
                           Navigator.push(context,
                               MaterialPageRoute(builder: (context) {
                             return ChatDetailPage(
-                                name: foundUser[index].name,
-                                generasi: foundUser[index].messageText,
-                                image: foundUser[index].imageURL);
+                                name: foundUser[index].name);
                           }));
                         },
                         child: Container(

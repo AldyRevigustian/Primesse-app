@@ -5,22 +5,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:intl/intl.dart';
+import 'package:primesse_app/models/chatUsersMode.dart';
 import 'package:primesse_app/utils/constant.dart';
 import 'package:primesse_app/widgets/audioPlayer.dart';
 import 'package:primesse_app/widgets/imagePreview.dart';
 
 class ChatDetailPage extends StatefulWidget {
   final String name;
-  final String generasi;
-  final String image;
+  // final String generasi;
+  // final String image;
 
-  ChatDetailPage(
-      {required this.name, required this.generasi, required this.image});
+  ChatDetailPage({required this.name});
   @override
   _ChatDetailPageState createState() => _ChatDetailPageState();
 }
 
 class _ChatDetailPageState extends State<ChatDetailPage> {
+  late ChatUsers? member;
+
   List messages = [];
   bool isLoading = false;
   late ScrollController _scrollController;
@@ -29,6 +31,9 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
   @override
   void initState() {
     super.initState();
+    member = chatUsers.firstWhere(
+      (user) => user.name == widget.name,
+    );
     _scrollController = ScrollController()..addListener(_scrollListener);
     loadMessages();
   }
@@ -81,7 +86,7 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
 
   final customCacheManager = CacheManager(Config(
     'customCacheKey',
-    stalePeriod: Duration(days: 15),
+    stalePeriod: Duration(days: 365),
     maxNrOfCacheObjects: 999999,
     repo: JsonCacheInfoRepository(databaseName: 'customCache'),
   ));
@@ -155,7 +160,7 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
             ),
             CircleAvatar(
               backgroundColor: Colors.white,
-              backgroundImage: AssetImage(widget.image),
+              backgroundImage: AssetImage(member!.imageURL),
               maxRadius: 20,
             ),
             SizedBox(
@@ -175,7 +180,7 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                         fontWeight: FontWeight.w500),
                   ),
                   Text(
-                    widget.generasi,
+                    member!.messageText,
                     style: TextStyle(
                         fontFamily: "Poppins",
                         fontSize: 12,
@@ -265,7 +270,7 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                                                           size: 30,
                                                         ),
                                                       ),
-                                                      memCacheWidth: 230,
+                                                      memCacheWidth: 300,
                                                       height: 300,
                                                       width: 230,
                                                       fit: BoxFit.cover,
@@ -292,10 +297,8 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                                                               return ImagePreview(
                                                                   name: widget
                                                                       .name,
-                                                                  generasi: widget
-                                                                      .generasi,
-                                                                  image: widget
-                                                                      .image,
+                                                                  generasi: member!.messageText,
+                                                                  image: member!.imageURL,
                                                                   url: messages[
                                                                           index]
                                                                       [

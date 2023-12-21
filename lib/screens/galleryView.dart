@@ -77,7 +77,7 @@ class _GalleryViewState extends State<GalleryView> {
 
   final customCacheManager = CacheManager(Config(
     'customCacheKey',
-    stalePeriod: Duration(days: 15),
+    stalePeriod: Duration(days: 365),
     maxNrOfCacheObjects: 999999,
     repo: JsonCacheInfoRepository(databaseName: 'customCache'),
   ));
