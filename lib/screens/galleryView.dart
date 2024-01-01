@@ -1,9 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:primesse_app/screens/downloadAll.dart';
 import 'package:primesse_app/utils/constant.dart';
 import 'package:primesse_app/widgets/imagePreview.dart';
 
@@ -23,6 +24,7 @@ class GalleryView extends StatefulWidget {
 
 class _GalleryViewState extends State<GalleryView> {
   List messages = [];
+  List allImage = [];
   bool isLoading = false;
   late ScrollController _scrollController;
   late DocumentSnapshot lastMessage;
@@ -99,9 +101,7 @@ class _GalleryViewState extends State<GalleryView> {
           .limit(limit)
           .where('format', isEqualTo: 'image')
           .get();
-      querySnapshot.docs.map((e) {
-        print(e.data().toString());
-      }).toList();
+      querySnapshot.docs.map((e) {}).toList();
     } else {
       querySnapshot = await FirebaseFirestore.instance
           .collection(widget.name)
@@ -165,6 +165,18 @@ class _GalleryViewState extends State<GalleryView> {
             ),
           ],
         ),
+        
+        leading:FirebaseAuth.instance.currentUser!.email == "aldybudiasih@gmail.com" ? 
+        IconButton(
+            icon: Icon(
+              Icons.download,
+              color: Colors.black,
+            ),
+            onPressed: () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) {
+                return DownloadAllPage(name: widget.name);
+              }));
+            }) : Center()
       ),
       body: SafeArea(
         child: Column(children: [
