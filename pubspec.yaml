@@ -35,6 +35,8 @@ dependencies:
   flutter_cache_manager: ^3.3.1
   google_nav_bar: ^5.0.6
   staggered_grid_view_flutter: ^0.0.4
+  device_information: ^0.0.4
+  device_info_plus: ^9.1.1
 
 dev_dependencies:
   flutter_test:

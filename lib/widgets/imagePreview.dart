@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -78,9 +79,17 @@ class _ImagePreviewState extends State<ImagePreview> {
   }
 
   Future<void> downloadImage(String imageUrl) async {
-    var status = await Permission.storage.request();
+    var status2 = await Permission.manageExternalStorage.request();
+    var status3 = await Permission.mediaLibrary.request();
 
-    if (status.isGranted) {
+    final plugin = DeviceInfoPlugin();
+    final android = await plugin.androidInfo;
+
+    final status = android.version.sdkInt < 33
+        ? await Permission.storage.request()
+        : PermissionStatus.granted;
+
+    if (status.isGranted && status2.isGranted && status3.isGranted) {
       var response = await http.get(Uri.parse(imageUrl));
 
       if (response.statusCode == 200) {
@@ -103,6 +112,8 @@ class _ImagePreviewState extends State<ImagePreview> {
         );
       }
     } else {
+      await Permission.storage.request();
+      print(status.toString());
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Permission denied'),
