@@ -2,7 +2,7 @@ name: primesse_app
 description: A new Flutter project.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
-version: 1.2.0+1
+version: 1.2.2
 
 environment:
   sdk: '>=3.1.0 <4.0.0'
@@ -23,7 +23,7 @@ dependencies:
   just_audio: ^0.9.35
   rxdart: ^0.27.7
   audio_video_progress_bar: ^2.0.1
-  url_launcher: ^6.2.1
+  url_launcher: ^6.2.4
   intl: ^0.18.1
   photo_view: ^0.14.0
   cached_network_image: ^3.3.0
@@ -38,6 +38,7 @@ dependencies:
   device_information: ^0.0.4
   device_info_plus: ^9.1.1
   percent_indicator: ^4.2.3
+  flutter_svg: ^2.0.9
 
 dev_dependencies:
   flutter_test:

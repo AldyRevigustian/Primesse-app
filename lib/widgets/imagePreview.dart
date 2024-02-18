@@ -79,8 +79,8 @@ class _ImagePreviewState extends State<ImagePreview> {
   }
 
   Future<void> downloadImage(String imageUrl) async {
-    var status2 = await Permission.manageExternalStorage.request();
-    var status3 = await Permission.mediaLibrary.request();
+    await Permission.manageExternalStorage.request();
+    await Permission.mediaLibrary.request();
 
     final plugin = DeviceInfoPlugin();
     final android = await plugin.androidInfo;
@@ -89,7 +89,7 @@ class _ImagePreviewState extends State<ImagePreview> {
         ? await Permission.storage.request()
         : PermissionStatus.granted;
 
-    if (status.isGranted && status2.isGranted && status3.isGranted) {
+    if (status.isGranted) {
       var response = await http.get(Uri.parse(imageUrl));
 
       if (response.statusCode == 200) {

@@ -9,6 +9,8 @@ import 'package:primesse_app/models/chatUsersMode.dart';
 import 'package:primesse_app/utils/constant.dart';
 import 'package:primesse_app/widgets/audioPlayer.dart';
 import 'package:primesse_app/widgets/imagePreview.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ChatDetailPage extends StatefulWidget {
   final String name;
@@ -133,32 +135,53 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
 
   @override
   Widget build(BuildContext context) {
+    final Uri _url = Uri.parse(
+        'https://twitter.com/intent/tweet?text=${member!.twitter}&hashtags=${member!.hashtag}%20');
+
+    Future<void> _launchUrl() async {
+      if (!await launchUrl(_url)) {
+        throw Exception('Could not launch $_url');
+      }
+    }
+
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 70,
         elevation: 0.5,
         automaticallyImplyLeading: false,
         backgroundColor: Colors.white,
+        titleSpacing: 0,
+        actions: [
+          Row(
+            children: [
+              IconButton(
+                icon: SvgPicture.asset(
+                  'assets/x.svg',
+                  width: 24,
+                  height: 24,
+                ),
+                splashRadius: 30,
+                onPressed: _launchUrl,
+              ),
+              SizedBox(
+                width: 10,
+              )
+            ],
+          )
+        ],
+        leading: IconButton(
+          icon: Icon(
+            FluentIcons.chevron_left_20_filled,
+            color: CustColors.tersierColor,
+            size: 30,
+          ),
+          splashRadius: 30,
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
         title: Row(
           children: [
-            ClipOval(
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: () {
-                    Navigator.pop(context);
-                  },
-                  child: Icon(
-                    FluentIcons.chevron_left_20_filled,
-                    color: CustColors.tersierColor,
-                    size: 30,
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(
-              width: 15,
-            ),
             CircleAvatar(
               backgroundColor: Colors.white,
               backgroundImage: AssetImage(member!.imageURL),
