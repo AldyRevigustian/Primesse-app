@@ -13,14 +13,22 @@ import 'package:primesse_app/screens/loading.dart';
 import 'package:primesse_app/utils/constant.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-
   FirebaseMessaging messaging = FirebaseMessaging.instance;
-  await messaging.subscribeToTopic("ALL");
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  String? isAllNotif = prefs.getString('isAllNotif');
+
+  if (isAllNotif == null || isAllNotif == "" || isAllNotif == "true") {
+    await messaging.subscribeToTopic("ALL");
+  } else if (isAllNotif == "false") {
+    await messaging.unsubscribeFromTopic("ALL");
+  }
 
   await flutterLocalNotificationsPlugin
       .resolvePlatformSpecificImplementation<
@@ -135,7 +143,6 @@ void main() async {
 
   runApp(MyApp());
 }
-
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {

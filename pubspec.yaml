@@ -2,7 +2,7 @@ name: primesse_app
 description: A new Flutter project.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
-version: 1.2.2
+version: 1.2.3
 
 environment:
   sdk: '>=3.1.0 <4.0.0'

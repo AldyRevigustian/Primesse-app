@@ -1,8 +1,10 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:primesse_app/models/chatUsersMode.dart';
 import 'package:primesse_app/screens/chatDetailPage.dart';
+import 'package:primesse_app/screens/settingScreen.dart';
 import 'package:primesse_app/utils/constant.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -12,6 +14,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  FirebaseMessaging messaging = FirebaseMessaging.instance;
+
   bool isFavOnly = false;
   List<String> favList = [];
   List<ChatUsers> foundUser = [];
@@ -19,7 +23,6 @@ class _HomePageState extends State<HomePage> {
   ScrollController scrollController = ScrollController(
     keepScrollOffset: true,
   );
-
 
   Future<void> loadList() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -113,7 +116,8 @@ class _HomePageState extends State<HomePage> {
         shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.only(
                 bottomLeft: Radius.circular(30),
-                bottomRight: Radius.circular(30)), side: BorderSide.none),
+                bottomRight: Radius.circular(30)),
+            side: BorderSide.none),
         backgroundColor: Colors.white,
         title: Padding(
           padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
@@ -174,18 +178,11 @@ class _HomePageState extends State<HomePage> {
                           splashColor: CustColors.tersierColor.withOpacity(0.3),
                           highlightColor:
                               CustColors.tersierColor.withOpacity(0.2),
-                          onTap: () {
-                            setState(() {
-                              isFavOnly = !isFavOnly;
-
-                              if (isFavOnly) {
-                                foundUser = foundUser
-                                    .where((element) => element.isFav)
-                                    .toList();
-                              } else {
-                                foundUser = allUsers;
-                              }
-                            });
+                          onTap: () async {
+                            Navigator.push(context,
+                                MaterialPageRoute(builder: (context) {
+                              return SettingScreen();
+                            }));
                           },
                           child: Container(
                             decoration: BoxDecoration(
@@ -193,11 +190,11 @@ class _HomePageState extends State<HomePage> {
                             padding: EdgeInsets.all(13),
                             child: isFavOnly
                                 ? Icon(
-                                    FluentIcons.star_20_filled,
+                                    FluentIcons.settings_20_filled,
                                     color: Colors.yellow[700],
                                   )
                                 : Icon(
-                                    FluentIcons.star_20_filled,
+                                    FluentIcons.settings_20_filled,
                                     color: CustColors.tersierColor
                                         .withOpacity(0.3),
                                   ),
@@ -237,8 +234,7 @@ class _HomePageState extends State<HomePage> {
                         onTap: () {
                           Navigator.push(context,
                               MaterialPageRoute(builder: (context) {
-                            return ChatDetailPage(
-                                name: foundUser[index].name);
+                            return ChatDetailPage(name: foundUser[index].name);
                           }));
                         },
                         child: Container(
@@ -304,19 +300,34 @@ class _HomePageState extends State<HomePage> {
                                         ),
                                         Container(
                                             child: IconButton(
-                                                onPressed: () {
+                                                onPressed: () async {
+                                                  ChatUsers item =
+                                                      foundUser[index];
+
+                                                  SharedPreferences prefs =
+                                                      await SharedPreferences
+                                                          .getInstance();
+                                                  String? isAllNotif = prefs
+                                                      .getString('isAllNotif');
+
                                                   setState(() {
                                                     foundUser[index].isFav =
                                                         !foundUser[index].isFav;
 
-                                                    ChatUsers item =
-                                                        foundUser[index];
-
                                                     if (item.isFav) {
+                                                      if (isAllNotif ==
+                                                          'false') {
+                                                        messaging
+                                                            .subscribeToTopic(
+                                                                item.name);
+                                                      }
                                                       chatUsers.removeAt(index);
                                                       chatUsers.insert(0, item);
                                                       addItem(item.name);
                                                     } else {
+                                                      messaging
+                                                          .unsubscribeFromTopic(
+                                                              item.name);
                                                       chatUsers.removeAt(index);
                                                       chatUsers.add(item);
                                                       removeItem(item.name);
