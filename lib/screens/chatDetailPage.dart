@@ -11,6 +11,7 @@ import 'package:primesse_app/widgets/audioPlayer.dart';
 import 'package:primesse_app/widgets/imagePreview.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:grouped_list/grouped_list.dart';
 
 class ChatDetailPage extends StatefulWidget {
   final String name;
@@ -21,7 +22,8 @@ class ChatDetailPage extends StatefulWidget {
 
 class _ChatDetailPageState extends State<ChatDetailPage> {
   late ChatUsers? member;
-
+  int multiple = 1;
+  String lastDate = "";
   List messages = [];
   bool isLoading = false;
   late ScrollController _scrollController;
@@ -34,28 +36,7 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
       (user) => user.name == widget.name,
     );
     _scrollController = ScrollController()..addListener(_scrollListener);
-    loadMessages();
-  }
-
-  Future<void> loadMessages() async {
-    if (!isLoading) {
-      setState(() {
-        isLoading = true;
-      });
-
-      List newMessages = await fetchMessages(
-        20,
-        messages.isNotEmpty ? lastMessage : null,
-      );
-      setState(() {
-        messages.addAll(newMessages);
-        if (newMessages.length != 0) {
-          lastMessage = newMessages[newMessages.length - 1];
-        }
-
-        isLoading = false;
-      });
-    }
+    fetchFirstMessage();
   }
 
   Future<void> loadMore() async {
@@ -74,7 +55,12 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
   void _scrollListener() {
     if (_scrollController.offset ==
         _scrollController.position.maxScrollExtent) {
+      setState(() {
+        multiple += 1;
+      });
+
       loadMore();
+      print(multiple.toString() + "x");
     }
     // if (_scrollController.offset >=
     //         _scrollController.position.maxScrollExtent &&
@@ -104,24 +90,75 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
           .collection(widget.name)
           .orderBy('createdAt', descending: true)
           .startAfterDocument(startAfter)
-          .limit(limit)
+          .where('createdAt',
+              isGreaterThanOrEqualTo: dateSevenAgo(lastDate, multiple))
           .get();
     } else {
       querySnapshot = await FirebaseFirestore.instance
           .collection(widget.name)
           .orderBy('createdAt', descending: true)
-          .limit(limit)
+          .where('createdAt',
+              isGreaterThanOrEqualTo: dateSevenAgo(lastDate, multiple))
           .get();
     }
 
     return querySnapshot.docs;
   }
 
+  Future<void> fetchFirstMessage() async {
+    late QuerySnapshot querySnapshot;
+
+    querySnapshot = await FirebaseFirestore.instance
+        .collection(widget.name)
+        .orderBy('createdAt', descending: true)
+        .limit(1)
+        .get();
+
+    setState(() {
+      lastDate = querySnapshot.docs[0]['createdAt'];
+    });
+
+    if (!isLoading && lastDate.isNotEmpty) {
+      setState(() {
+        isLoading = true;
+      });
+
+      List newMessages = await fetchMessages(
+        20,
+        messages.isNotEmpty ? lastMessage : null,
+      );
+      setState(() {
+        messages.addAll(newMessages);
+        if (newMessages.length != 0) {
+          lastMessage = newMessages[newMessages.length - 1];
+        }
+
+        isLoading = false;
+      });
+    }
+  }
+
   String formatDate(date) {
     DateTime dateTime = DateTime.parse(date);
     dateTime = dateTime.add(const Duration(hours: 7));
 
-    String formattedDate = DateFormat('dd MMMM yyyy HH:mm').format(dateTime);
+    String formattedDate = DateFormat('HH:mm:ss', "id_ID").format(dateTime);
+    return formattedDate;
+  }
+
+  String dateSevenAgo(date, int mlt) {
+    DateTime now = DateTime.parse(date);
+    DateTime fiveDaysAgo = now.subtract(Duration(days: 7 * mlt));
+    String formattedDate =
+        DateFormat('yyyy-MM-dd', "id_ID").format(fiveDaysAgo);
+    return formattedDate;
+  }
+
+  String formatDateOnly(date) {
+    DateTime dateTime = DateTime.parse(date);
+    dateTime = dateTime.add(const Duration(hours: 7));
+    String formattedDate =
+        DateFormat('EEEE, dd MMMM yyyy', "id_ID").format(dateTime);
     return formattedDate;
   }
 
@@ -129,7 +166,8 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
     DateTime dateTime = DateTime.parse(date);
 
     dateTime = dateTime.add(const Duration(hours: 7));
-    String formattedDate = DateFormat('dd-MM-yyyy-HHmmss').format(dateTime);
+    String formattedDate =
+        DateFormat('dd-MM-yyyy-HHmmss', "id_ID").format(dateTime);
     return "" + formattedDate + ".mp3";
   }
 
@@ -144,6 +182,7 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
       }
     }
 
+    double width = MediaQuery.of(context).size.width;
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 70,
@@ -230,190 +269,212 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                         size: 30,
                       ),
                     )
-                  : ListView.builder(
+                  : GroupedListView(
+                      sort: false,
+                      groupSeparatorBuilder: (String groupByValue) => Padding(
+                        padding: EdgeInsets.all(10),
+                        child: Center(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              Container(
+                                width: width / 6,
+                                height: 1,
+                                decoration: BoxDecoration(
+                                    color: CustColors.tersierColor
+                                        .withOpacity(0.3)),
+                              ),
+                              Container(
+                                  padding: EdgeInsets.symmetric(
+                                      vertical: 15, horizontal: 0),
+                                  child: Text(
+                                    groupByValue,
+                                    style: TextStyle(
+                                        fontFamily: "Poppins",
+                                        fontSize: 12,
+                                        color: CustColors.tersierColor
+                                            .withOpacity(0.6)),
+                                  )),
+                              Container(
+                                width: width / 6,
+                                height: 1,
+                                decoration: BoxDecoration(
+                                    color: CustColors.tersierColor
+                                        .withOpacity(0.3)),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      elements: messages,
+                      groupBy: (element) =>
+                          formatDateOnly(element['createdAt']),
                       cacheExtent: 9999,
                       controller: _scrollController,
-                      itemCount: messages.length + 1,
                       reverse: true,
                       shrinkWrap: true,
                       padding: EdgeInsets.all(15),
-                      itemBuilder: (context, index) {
-                        if (index < messages.length) {
-                          return Container(
-                            padding: EdgeInsets.only(
-                                left: 14, right: 14, top: 10, bottom: 10),
-                            child: Align(
-                              alignment: Alignment.topLeft,
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  messages[index]["format"] == 'text'
-                                      ? Container(
-                                          decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(25),
-                                              color: Colors.white),
-                                          padding: EdgeInsets.symmetric(
-                                              vertical: 15, horizontal: 15),
-                                          child: Text(
-                                            messages[index]["message"],
-                                            style: TextStyle(
-                                                fontFamily: "Poppins",
-                                                fontSize: 14,
-                                                color: Colors.black),
-                                          ))
-                                      : messages[index]["format"] == 'image'
-                                          ? Container(
-                                              height: 300,
-                                              width: 230,
-                                              decoration: BoxDecoration(
-                                                  color: Colors.white,
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          25)),
-                                              child: ClipRRect(
-                                                borderRadius:
-                                                    BorderRadius.circular(25),
-                                                child: Stack(
-                                                  children: [
-                                                    CachedNetworkImage(
-                                                        cacheManager:
-                                                            customCacheManager,
-                                                        imageUrl:
-                                                            messages[index]
-                                                                ["message"],
-                                                        progressIndicatorBuilder:
-                                                            (context, url,
-                                                                    downloadProgress) =>
-                                                                Center(
-                                                                  child:
-                                                                      SpinKitFadingCircle(
-                                                                    color: CustColors
-                                                                        .tersierColor
-                                                                        .withOpacity(
-                                                                            0.3),
-                                                                    size: 30,
-                                                                  ),
-                                                                ),
-                                                        memCacheWidth: 300,
-                                                        height: 300,
-                                                        width: 230,
-                                                        fit: BoxFit.cover,
-                                                        errorWidget: (context,
-                                                            url, error) {
-                                                          return IconButton(
-                                                            onPressed: () {
-                                                              customCacheManager
-                                                                  .removeFile(
-                                                                      url);
-                                                            },
-                                                            icon: Icon(
-                                                                Icons.error,
-                                                                color: CustColors
-                                                                    .tersierColor
-                                                                    .withOpacity(
-                                                                        0.3),
-                                                                size: 30),
-                                                          );
-                                                        }),
-                                                    Positioned.fill(
-                                                      child: Material(
-                                                        color:
-                                                            Colors.transparent,
-                                                        child: InkWell(
-                                                          onTap: () {
-                                                            Navigator.push(
-                                                                context,
-                                                                MaterialPageRoute(
-                                                                    builder:
-                                                                        (context) {
-                                                              return ImagePreview(
-                                                                  name: widget
-                                                                      .name,
-                                                                  generasi: member!
-                                                                      .messageText,
-                                                                  image: member!
-                                                                      .imageURL,
-                                                                  url: messages[
-                                                                          index]
-                                                                      [
-                                                                      "message"]);
-                                                            }));
-                                                          },
-                                                        ),
-                                                      ),
-                                                    )
-                                                  ],
-                                                ),
-                                              ),
-                                            )
-                                          : ClipRRect(
-                                              borderRadius:
-                                                  BorderRadius.circular(25),
-                                              child: Material(
+                      itemBuilder: (context, element) {
+                        return Container(
+                          padding: EdgeInsets.only(
+                              left: 14, right: 14, top: 10, bottom: 10),
+                          child: Align(
+                            alignment: Alignment.topLeft,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                element["format"] == 'text'
+                                    ? Container(
+                                        decoration: BoxDecoration(
+                                            borderRadius:
+                                                BorderRadius.circular(25),
+                                            color: Colors.white),
+                                        padding: EdgeInsets.symmetric(
+                                            vertical: 15, horizontal: 15),
+                                        child: Text(
+                                          element["message"],
+                                          style: TextStyle(
+                                              fontFamily: "Poppins",
+                                              fontSize: 14,
+                                              color: Colors.black),
+                                        ))
+                                    : element["format"] == 'image'
+                                        ? Container(
+                                            height: 300,
+                                            width: 230,
+                                            decoration: BoxDecoration(
                                                 color: Colors.white,
-                                                child: InkWell(
-                                                  onTap: () {
-                                                    Navigator.push(context,
-                                                        MaterialPageRoute(
-                                                            builder: (context) {
-                                                      return AudioPlayerScreen(
-                                                          name: formatName(
-                                                              messages[index][
-                                                                  "createdAt"]),
-                                                          url: messages[index]
-                                                              ["message"]);
-                                                    }));
-                                                  },
-                                                  child: Container(
-                                                    padding:
-                                                        EdgeInsets.symmetric(
-                                                            vertical: 15,
-                                                            horizontal: 15),
-                                                    child: Row(
-                                                      mainAxisSize:
-                                                          MainAxisSize.min,
-                                                      children: [
-                                                        Container(
-                                                            child: Icon(FluentIcons
-                                                                .music_note_2_20_filled)),
-                                                        SizedBox(
-                                                          width: 10,
-                                                        ),
-                                                        Text(formatName(
-                                                            messages[index]
-                                                                ["createdAt"]))
-                                                      ],
+                                                borderRadius:
+                                                    BorderRadius.circular(25)),
+                                            child: ClipRRect(
+                                              borderRadius:
+                                                  BorderRadius.circular(25),
+                                              child: Stack(
+                                                children: [
+                                                  CachedNetworkImage(
+                                                      cacheManager:
+                                                          customCacheManager,
+                                                      imageUrl:
+                                                          element["message"],
+                                                      progressIndicatorBuilder:
+                                                          (context, url,
+                                                                  downloadProgress) =>
+                                                              Center(
+                                                                child:
+                                                                    SpinKitFadingCircle(
+                                                                  color: CustColors
+                                                                      .tersierColor
+                                                                      .withOpacity(
+                                                                          0.3),
+                                                                  size: 30,
+                                                                ),
+                                                              ),
+                                                      memCacheWidth: 300,
+                                                      height: 300,
+                                                      width: 230,
+                                                      fit: BoxFit.cover,
+                                                      errorWidget: (context,
+                                                          url, error) {
+                                                        return IconButton(
+                                                          onPressed: () {
+                                                            customCacheManager
+                                                                .removeFile(
+                                                                    url);
+                                                          },
+                                                          icon: Icon(
+                                                              Icons.error,
+                                                              color: CustColors
+                                                                  .tersierColor
+                                                                  .withOpacity(
+                                                                      0.3),
+                                                              size: 30),
+                                                        );
+                                                      }),
+                                                  Positioned.fill(
+                                                    child: Material(
+                                                      color: Colors.transparent,
+                                                      child: InkWell(
+                                                        onTap: () {
+                                                          Navigator.push(
+                                                              context,
+                                                              MaterialPageRoute(
+                                                                  builder:
+                                                                      (context) {
+                                                            return ImagePreview(
+                                                                name:
+                                                                    widget.name,
+                                                                generasi: member!
+                                                                    .messageText,
+                                                                image: member!
+                                                                    .imageURL,
+                                                                url: element[
+                                                                    "message"]);
+                                                          }));
+                                                        },
+                                                      ),
                                                     ),
+                                                  )
+                                                ],
+                                              ),
+                                            ),
+                                          )
+                                        : ClipRRect(
+                                            borderRadius:
+                                                BorderRadius.circular(25),
+                                            child: Material(
+                                              color: Colors.white,
+                                              child: InkWell(
+                                                onTap: () {
+                                                  Navigator.push(context,
+                                                      MaterialPageRoute(
+                                                          builder: (context) {
+                                                    return AudioPlayerScreen(
+                                                        name: formatName(
+                                                            element[
+                                                                "createdAt"]),
+                                                        url:
+                                                            element["message"]);
+                                                  }));
+                                                },
+                                                child: Container(
+                                                  padding: EdgeInsets.symmetric(
+                                                      vertical: 15,
+                                                      horizontal: 15),
+                                                  child: Row(
+                                                    mainAxisSize:
+                                                        MainAxisSize.min,
+                                                    children: [
+                                                      Container(
+                                                          child: Icon(FluentIcons
+                                                              .music_note_2_20_filled)),
+                                                      SizedBox(
+                                                        width: 10,
+                                                      ),
+                                                      Text(formatName(
+                                                          element["createdAt"]))
+                                                    ],
                                                   ),
                                                 ),
                                               ),
                                             ),
-                                  SizedBox(
-                                    height: 5,
-                                  ),
-                                  Text(
-                                    formatDate(messages[index]["createdAt"]),
-                                    textAlign: TextAlign.start,
-                                    style: TextStyle(
-                                        fontFamily: "Poppins",
-                                        color: CustColors.tersierColor,
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.w400),
-                                  ),
-                                ],
-                              ),
+                                          ),
+                                SizedBox(
+                                  height: 5,
+                                ),
+                                Text(
+                                  formatDate(element["createdAt"]) + " WIB",
+                                  textAlign: TextAlign.start,
+                                  style: TextStyle(
+                                      fontFamily: "Poppins",
+                                      color: CustColors.tersierColor,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w400),
+                                ),
+                              ],
                             ),
-                          );
-                        } else if (isLoading) {
-                          // return Padding(
-                          //   padding: EdgeInsets.all(10),
-                          //   child: const Center(
-                          //     child: CircularProgressIndicator(),
-                          //   ),
-                          // );
-                        }
+                          ),
+                        );
                       },
                     ),
             ),
