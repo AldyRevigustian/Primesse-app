@@ -22,7 +22,6 @@ class ChatDetailPage extends StatefulWidget {
 
 class _ChatDetailPageState extends State<ChatDetailPage> {
   late ChatUsers? member;
-  int multiple = 1;
   String lastDate = "";
   List messages = [];
   bool isLoading = false;
@@ -44,6 +43,7 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
       20,
       messages.isNotEmpty ? lastMessage : null,
     );
+
     setState(() {
       messages.addAll(newMessages);
       if (newMessages.length != 0) {
@@ -55,12 +55,7 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
   void _scrollListener() {
     if (_scrollController.offset ==
         _scrollController.position.maxScrollExtent) {
-      setState(() {
-        multiple += 1;
-      });
-
       loadMore();
-      print(multiple.toString() + "x");
     }
     // if (_scrollController.offset >=
     //         _scrollController.position.maxScrollExtent &&
@@ -85,21 +80,48 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
 
   Future<List> fetchMessages(int limit, DocumentSnapshot? startAfter) async {
     late QuerySnapshot querySnapshot;
+    late QuerySnapshot lastM;
+
     if (startAfter != null) {
-      querySnapshot = await FirebaseFirestore.instance
+      var collectionRef = FirebaseFirestore.instance
           .collection(widget.name)
           .orderBy('createdAt', descending: true)
-          .startAfterDocument(startAfter)
-          .where('createdAt',
-              isGreaterThanOrEqualTo: dateSevenAgo(lastDate, multiple))
-          .get();
+          .startAfterDocument(startAfter);
+
+      lastM = await collectionRef.limit(1).get();
+
+      if (lastM.size != 0) {
+        querySnapshot = await collectionRef
+            .where('createdAt',
+                isGreaterThanOrEqualTo: dateAgo(lastM.docs[0]['createdAt'], 5))
+            .get();
+      }
     } else {
-      querySnapshot = await FirebaseFirestore.instance
+      var collRef = FirebaseFirestore.instance
           .collection(widget.name)
-          .orderBy('createdAt', descending: true)
-          .where('createdAt',
-              isGreaterThanOrEqualTo: dateSevenAgo(lastDate, multiple))
+          .orderBy('createdAt', descending: true);
+
+      var lowerBoundDate = dateAgo(lastDate, 5);
+
+      querySnapshot = await collRef
+          .where('createdAt', isGreaterThanOrEqualTo: lowerBoundDate)
           .get();
+
+      if (querySnapshot.size < 10) {
+        print("Very LOW");
+        lowerBoundDate = dateAgo(lastDate, 30);
+      } else if (querySnapshot.size < 20) {
+        print("LOW");
+        lowerBoundDate = dateAgo(lastDate, 20);
+      } else if (querySnapshot.size < 30) {
+        print("Medium");
+        lowerBoundDate = dateAgo(lastDate, 10);
+      }
+
+      querySnapshot = await collRef
+          .where('createdAt', isGreaterThanOrEqualTo: lowerBoundDate)
+          .get();
+      print(querySnapshot.size);
     }
 
     return querySnapshot.docs;
@@ -146,9 +168,9 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
     return formattedDate;
   }
 
-  String dateSevenAgo(date, int mlt) {
+  String dateAgo(date, int amount) {
     DateTime now = DateTime.parse(date);
-    DateTime fiveDaysAgo = now.subtract(Duration(days: 7 * mlt));
+    DateTime fiveDaysAgo = now.subtract(Duration(days: amount));
     String formattedDate =
         DateFormat('yyyy-MM-dd', "id_ID").format(fiveDaysAgo);
     return formattedDate;
